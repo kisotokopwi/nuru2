@@ -5,6 +5,8 @@ import { AuthGuard } from './guards/AuthGuard';
 import SupervisorDashboard from './pages/SupervisorDashboard';
 import DailyReportForm from './components/DailyReportForm';
 import AdminConfiguration from './pages/AdminConfiguration';
+import InvoiceGeneration from './pages/InvoiceGeneration';
+import InvoiceSearch from './pages/InvoiceSearch';
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -21,6 +23,8 @@ function Dashboard() {
         <div>
           <h3>Admin</h3>
           <AdminConfiguration />
+          <InvoiceGeneration />
+          <InvoiceSearch />
         </div>
       </div>
     </div>

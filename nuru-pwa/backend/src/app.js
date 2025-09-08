@@ -25,10 +25,12 @@ app.get('/health', (req, res) => {
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import coreRoutes from './routes/core.routes.js';
+import invoiceRoutes from './routes/invoices.routes.js';
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/', coreRoutes);
+app.use('/invoices', invoiceRoutes);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
