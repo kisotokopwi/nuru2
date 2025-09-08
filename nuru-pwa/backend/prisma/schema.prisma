@@ -37,6 +37,7 @@ model User {
   supervisorReports DailyReport[] @relation("SupervisorDailyReports")
   auditLogs         AuditLog[]
   sites             UsersOnSites[]
+  invoiceAccessLogs InvoiceAccessLog[]
 }
 
 model Client {
@@ -161,8 +162,11 @@ model Invoice {
   amount        Decimal    @db.Decimal(12, 2)
   generatedAt   DateTime   @default(now())
   pdfPath       String?
+  immutable     Boolean    @default(true)
+  signature     String?
 
   dailyReport DailyReport @relation(fields: [dailyReportId], references: [id])
+  accessLogs  InvoiceAccessLog[]
 
   @@index([dailyReportId])
   @@index([type])
@@ -184,4 +188,19 @@ model AuditLog {
   @@index([userId])
   @@index([tableName])
   @@index([recordId])
+}
+
+model InvoiceAccessLog {
+  id         String   @id @default(cuid())
+  invoiceId  String
+  userId     String?
+  ip         String?
+  userAgent  String?
+  accessedAt DateTime @default(now())
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@index([invoiceId])
+  @@index([userId])
 }

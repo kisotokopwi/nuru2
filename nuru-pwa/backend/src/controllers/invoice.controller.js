@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import Joi from 'joi';
 import { generateDualInvoicesForReport } from '../services/invoice.service.js';
 import { getFileStream } from '../services/storage.service.js';
+import { verifyInvoiceSignature } from '../services/sign.service.js';
 
 const prisma = new PrismaClient();
 
@@ -50,6 +51,7 @@ export async function downloadClient(req, res) {
   if (!inv || inv.type !== 'CLIENT') return res.status(404).end();
   const stream = getFileStream(inv.pdfPath);
   if (!stream) return res.status(404).end();
+  await prisma.invoiceAccessLog.create({ data: { invoiceId: inv.id, userId: req.user?.userId || null, ip: req.ip, userAgent: req.headers['user-agent'] } });
   res.setHeader('Content-Type', 'application/pdf');
   stream.pipe(res);
 }
@@ -60,6 +62,7 @@ export async function downloadInternal(req, res) {
   if (!inv || inv.type !== 'INTERNAL') return res.status(404).end();
   const stream = getFileStream(inv.pdfPath);
   if (!stream) return res.status(404).end();
+  await prisma.invoiceAccessLog.create({ data: { invoiceId: inv.id, userId: req.user?.userId || null, ip: req.ip, userAgent: req.headers['user-agent'] } });
   res.setHeader('Content-Type', 'application/pdf');
   stream.pipe(res);
 }
@@ -68,7 +71,9 @@ export async function verifyReference(req, res) {
   const { reference } = req.params;
   const invoice = await prisma.invoice.findFirst({ where: { referenceId: reference } });
   if (!invoice) return res.status(404).json({ valid: false });
-  res.json({ valid: true, reference, generatedAt: invoice.generatedAt });
+  const payload = { reference, reportId: invoice.dailyReportId, totalAmount: invoice.amount, when: invoice.generatedAt.toISOString() };
+  const validSig = invoice.signature ? verifyInvoiceSignature(payload, invoice.signature) : false;
+  res.json({ valid: true, reference, generatedAt: invoice.generatedAt, signatureVerified: validSig });
 }
 
 export async function invoicesByDate(req, res) {

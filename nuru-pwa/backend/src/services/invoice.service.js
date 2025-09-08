@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { generateReferenceId } from './reference.service.js';
 import { generateClientInvoicePdf, generateInternalInvoicePdf } from './pdf.service.js';
 import { storeBuffer } from './storage.service.js';
+import { signInvoicePayload } from './sign.service.js';
 
 const prisma = new PrismaClient();
 
@@ -40,12 +41,14 @@ export async function generateDualInvoicesForReport(reportId) {
   storeBuffer(clientPath, clientPdf);
   storeBuffer(internalPath, internalPdf);
 
+  const signaturePayload = { reference, reportId: report.id, totalAmount: report.totalAmount, when: new Date().toISOString() };
+  const signature = signInvoicePayload(signaturePayload);
   const updated = await prisma.$transaction(async (tx) => {
-    const ci = await tx.invoice.update({ where: { id: clientInvoice.id }, data: { pdfPath: clientPath, generatedAt: new Date() } });
-    const ii = await tx.invoice.update({ where: { id: internalInvoice.id }, data: { pdfPath: internalPath, generatedAt: new Date() } });
+    const ci = await tx.invoice.update({ where: { id: clientInvoice.id }, data: { pdfPath: clientPath, generatedAt: new Date(), immutable: true, signature } });
+    const ii = await tx.invoice.update({ where: { id: internalInvoice.id }, data: { pdfPath: internalPath, generatedAt: new Date(), immutable: true, signature } });
     return [ci, ii];
   });
 
-  return { reference, clientInvoice: updated[0], internalInvoice: updated[1] };
+  return { reference, signature, clientInvoice: updated[0], internalInvoice: updated[1] };
 }
 
