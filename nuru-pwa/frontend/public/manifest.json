@@ -1,0 +1,9 @@
+{
+  "name": "Nuru Company PWA",
+  "short_name": "NuruPWA",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
+  "icons": []
+}
