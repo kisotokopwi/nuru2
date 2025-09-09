@@ -19,6 +19,7 @@ Progressive Web App for multi-service worker supervision with automated dual-inv
 - [ ] PWA Implementation & Offline Features - ⏳ High - Mobile Experience
 - [ ] Admin Dashboard & Analytics - ⏳ Medium - Management Tools
 - [ ] Testing & Production Deployment - ⏳ High - Launch Ready
+  <!-- Note: Manual API testing script available at backend/test-api.sh -->
 
 ## 📋 Current Sprint Status
 **Working on:** Implementing fraud prevention invoicing
